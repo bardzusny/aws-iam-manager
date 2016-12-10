@@ -7,7 +7,7 @@ provider:
   stackTags: aws-iam-manager
   environment:
     GITHUB_ACCESS_TOKEN: ${file(./secrets.yml):GITHUB_ACCESS_TOKEN}
-    USERS_PATH: /aim-managed
+    USERS_PATH: /aim-managed/
 
 package:
   exclude:
@@ -15,6 +15,8 @@ package:
     - '!node_modules/js-yaml/**'
     - '!node_modules/axios/**'
     - '!node_modules/bunyan/**'
+    - '!node_modules/lodash/**'
+    - '!node_modules/bluebird/**'
 
 region: us-east-1
 
