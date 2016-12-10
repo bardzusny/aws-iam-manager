@@ -3,30 +3,30 @@ provider:
   name: aws
   runtime: nodejs4.3
 
-#Frankfurt
-region: us-central-1
+region: us-east-1
 
 functions:
-  hello:
+  IAMManagerSNSHandler:
     handler: index.handler
     events:
-      - sns: GithubNotifyTopic
+      - sns:
+          Ref: IAMManagerNotifyTopic
 
 resources:
   Resources:
     # Create SNS Topic that will be used to catch messages from Github
-    GithubNotifyTopic:
+    IAMManagerNotifyTopic:
       Type: "AWS::SNS::Topic"
       Properties:
-        DisplayName: GithubNotifyTopic
+        DisplayName: IAMManagerNotifyTopic
 
     # Create Role that will be used to Push Messages on Githubs behalf
-    GithubHookUser:
+    IAMManagerUser:
       Type: "AWS::IAM::User"
       Properties:
-        UserName: GithubHookUser
+        UserName: IAMManagerUser
         Policies:
-          - PolicyName: GithubHookAllowSNSSubscriptionPolicy
+          - PolicyName: IAMManagerGithubHookAllowSNSSubscriptionPolicy
             PolicyDocument:
               Version: "2012-10-17"
               Statement:
@@ -34,10 +34,10 @@ resources:
                   Action:
                     - sns:Publish
                   Resource:
-                    Ref: GithubNotifyTopic
+                    Ref: IAMManagerNotifyTopic
 
   Outputs:
-    GithubNotifyTopicARN:
+    IAMManagerNotifyTopicARN:
       Description: ARN of Github Hook topic, (SNS topic on GitHub)
       Value:
-        Ref: GithubNotifyTopic
+        Ref: IAMManagerNotifyTopic
