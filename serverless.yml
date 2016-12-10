@@ -1,0 +1,60 @@
+service: aws-permissions
+provider:
+  name: aws
+  runtime: nodejs4.3
+
+region: us-central-1
+
+functions:
+  hello:
+    handler: index.handler
+    events:
+      - sns: GithubNotifyTopic
+
+resources:
+  Resources:
+    # Create SNS Topic that will be used to catch messages from Github
+    GithubNotifyTopic:
+      Type: "AWS::SNS::Topic"
+      Properties: 
+        DisplayName: GithubNotifyTopic
+
+    # Create Role that will be used to Push Messages on Githubs behalf
+    GithubHookRole:
+      Type: "AWS::IAM::Role"
+      Properties:
+        RoleName: GithubHookRole
+        AssumeRolePolicyDocument:
+          Version: '2017'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        # Allow it to push messages to SNS Topic
+        Policies:
+          - PolicyName: GithubHookAllowSNSSubscriptionPolicy
+            PolicyDocument:
+              Version: '2017'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - sns:Publish
+                  Resource: GithubNotifyTopic
+
+    # Create a Instance Profile that will have role attached
+    GithubHookInstanceProfile: 
+      Type: "AWS::IAM::InstanceProfile"
+      Properties: 
+        Path: "/"
+        Roles: 
+          - GithubHookRole
+
+  Outputs:
+    InsertVariableNameForLaterUse:
+      Description: ARN of Github Hook topic
+      Value:
+        Fn::GetAtt:
+          - GithubNotifyTopic
+          - TopicName

@@ -1,0 +1,24 @@
+{
+  "name": "aws-permissions",
+  "version": "1.0.0",
+  "description": "AWS Permissions, Groups and Roles handler synchronized with Github",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "github",
+    "aws",
+    "lambda",
+    "permissions",
+    "iam"
+  ],
+  "author": "Rafal Wilinski",
+  "license": "MIT",
+  "devDependencies": {
+    "aws-sdk": "^2.7.13"
+  },
+  "dependencies": {
+    "js-yaml": "^3.7.0"
+  }
+}
