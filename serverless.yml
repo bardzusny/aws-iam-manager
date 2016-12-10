@@ -10,16 +10,11 @@ functions:
     handler: index.handler
     events:
       - sns:
-          Ref: IAMManagerNotifyTopic
+          topicName: IAMManagerNotifyTopic
+          displayName: IAMManagerNotifyTopic
 
 resources:
   Resources:
-    # Create SNS Topic that will be used to catch messages from Github
-    IAMManagerNotifyTopic:
-      Type: "AWS::SNS::Topic"
-      Properties:
-        DisplayName: IAMManagerNotifyTopic
-
     # Create Role that will be used to Push Messages on Githubs behalf
     IAMManagerUser:
       Type: "AWS::IAM::User"
@@ -34,10 +29,10 @@ resources:
                   Action:
                     - sns:Publish
                   Resource:
-                    Ref: IAMManagerNotifyTopic
+                    Ref: SNSTopicIAMManagerNotifyTopic
 
   Outputs:
     IAMManagerNotifyTopicARN:
       Description: ARN of Github Hook topic, (SNS topic on GitHub)
       Value:
-        Ref: IAMManagerNotifyTopic
+        Ref: SNSTopicIAMManagerNotifyTopic
