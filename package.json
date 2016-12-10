@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy": "serverless deploy -v",
-    "logs": "serverless logs -f IAMManagerSNSHandler -t"
+    "logs": "serverless logs -f IAMManagerSNSHandler -t",
+    "prepare-secrets": "cp secrets.yml.example secrets.yml",
+    "invoke": "serverless invoke local -f IAMManagerSNSHandler -p ./event.json | bunyan"
   },
   "keywords": [
     "github",
@@ -21,6 +23,8 @@
     "aws-sdk": "^2.7.13"
   },
   "dependencies": {
+    "axios": "^0.15.3",
+    "bunyan": "^1.8.5",
     "js-yaml": "^3.7.0"
   }
 }

@@ -2,6 +2,19 @@ service: aws-iam-manager
 provider:
   name: aws
   runtime: nodejs4.3
+  memorySize: 512
+  timeout: 30
+  stackTags: aws-iam-manager
+  environment:
+    GITHUB_ACCESS_TOKEN: ${file(./secrets.yml):GITHUB_ACCESS_TOKEN}
+    USERS_PATH: /aim-managed
+
+package:
+  exclude:
+    - node_modules/**
+    - '!node_modules/js-yaml/**'
+    - '!node_modules/axios/**'
+    - '!node_modules/bunyan/**'
 
 region: us-east-1
 
