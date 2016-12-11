@@ -54,9 +54,9 @@ const updateUsers = json => new Promise((resolve, reject) => {
         .map(createUser)
         .concat(usersToDelete
           .map(deleteUser)))
-      .then(data => {
+      .then(result => {
         log.info('Updating users finished');
-        return resolve();
+        return resolve(result);
       })
       .catch(reject);
   });
