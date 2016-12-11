@@ -1,3 +1,5 @@
+'use strict';
+
 const Promise = require('bluebird');
 const AWS = require('aws-sdk');
 const bunyan = require('bunyan');

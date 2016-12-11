@@ -76,8 +76,7 @@ module.exports.handler = (event, context, callback) => {
       fn: processRoles, url: rolesBlobUrl,
     }];
 
-    return Promise.map(promises, promise => {
-      return promise.fn(promise.url);
-    }, { concurrency: 1 }).then(returnSuccess).catch(returnError);
+    return Promise.map(promises, promise => promise.fn(promise.url),
+      { concurrency: 1 }).then(returnSuccess).catch(returnError);
   }).catch(returnError);
 };
