@@ -68,12 +68,16 @@ module.exports.handler = (event, context, callback) => {
     const groupsBlobUrl = payload.data
       .filter(file => file.name === 'groups.yml')[0].git_url;
 
-    const promises = [
-      processUsers(usersBlobUrl),
-      processGroups(groupsBlobUrl),
-      processRoles(rolesBlobUrl),
-    ];
+    const promises = [{
+      fn: processUsers, url: usersBlobUrl,
+    }, {
+      fn: processGroups, url: groupsBlobUrl,
+    }, {
+      fn: processRoles, url: rolesBlobUrl,
+    }];
 
-    return Promise.all(promises).then(returnSuccess).catch(returnError);
+    return Promise.map(promises, promise => {
+      return promise.fn(promise.url);
+    }, { concurrency: 1 }).then(returnSuccess).catch(returnError);
   }).catch(returnError);
 };

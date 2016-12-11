@@ -3,6 +3,8 @@ const AWS = require('aws-sdk');
 const bunyan = require('bunyan');
 const _ = require('lodash');
 
+AWS.config.setPromisesDependency(Promise);
+
 const iam = new AWS.IAM();
 const log = bunyan.createLogger({ name: 'users' });
 
@@ -12,21 +14,12 @@ const createUser = UserName => new Promise((resolve, reject) => {
   iam.createUser({
     UserName,
     Path: process.env.USERS_PATH,
-  }, (err, data) => {
-    if (err) return reject(err);
-    return resolve(data);
-  });
+  }).promise().then(resolve).catch(reject);
 });
 
 const deleteUser = UserName => new Promise((resolve, reject) => {
   log.info({ UserName }, 'Deleting old user...');
-
-  iam.deleteUser({
-    UserName,
-  }, (err, data) => {
-    if (err) return reject(err);
-    return resolve(data);
-  });
+  iam.deleteUser({ UserName }).promise().then(resolve).catch(reject);
 });
 
 const updateUsers = json => new Promise((resolve, reject) => {
@@ -34,9 +27,7 @@ const updateUsers = json => new Promise((resolve, reject) => {
 
   iam.listUsers({
     PathPrefix: process.env.USERS_PATH,
-  }, (err, data) => {
-    if (err) return reject(err);
-
+  }).promise().then(data => {
     const newUsers = json.users;
     const oldUsers = data.Users.map(u => u.UserName);
 
@@ -59,6 +50,9 @@ const updateUsers = json => new Promise((resolve, reject) => {
         return resolve(result);
       })
       .catch(reject);
+  }).catch(error => {
+    log.error(error, 'Error while listing user');
+    return reject(error);
   });
 });
 

@@ -3,6 +3,8 @@ const AWS = require('aws-sdk');
 const bunyan = require('bunyan');
 const _ = require('lodash');
 
+AWS.config.setPromisesDependency(Promise);
+
 const iam = new AWS.IAM();
 const log = bunyan.createLogger({ name: 'groups' });
 
@@ -12,20 +14,14 @@ const addUserToGroup = (UserName, GroupName) => new Promise((resolve, reject) =>
   iam.addUserToGroup({
     UserName,
     GroupName,
-  }, (err, data) => {
-    if (err) return reject(err);
-    return resolve(data);
-  });
+  }).promise().then(resolve).catch(reject);
 });
 
 const removeUserFromGroup = (UserName, GroupName) => new Promise((resolve, reject) => {
   iam.removeUserFromGroup({
     UserName,
     GroupName
-  }, (err, data) => {
-    if (err) return reject(err);
-    return resolve(data);
-  });
+  }).promise().then(resolve).catch(reject);
 });
 
 const createGroup = GroupName => new Promise((resolve, reject) => {
@@ -33,19 +29,7 @@ const createGroup = GroupName => new Promise((resolve, reject) => {
   iam.createGroup({
     GroupName,
     Path: process.env.USERS_PATH,
-  }, (err, data) => {
-    if (err) return reject(err);
-    return resolve(data);
-  });
-});
-
-const getGroup = GroupName => new Promise((resolve, reject) => {
-  iam.getGroup({
-    GroupName,
-  }, (err, data) => {
-    if (err) return reject(err);
-    return resolve(data);
-  });
+  }).promise().then(resolve).catch(reject);
 });
 
 const reassignUsers = (data, group) => new Promise((resolve, reject) => {
@@ -92,7 +76,7 @@ const forgeNewGroup = (group, error) => new Promise((resolve, reject) => {
 
 const updateGroups = json => new Promise((resolve, reject) => {
   const promises = json.groups.map(group =>
-    getGroup(group.name).then(data => {
+    iam.getGroup({ GroupName: group.name }).promise().then(data => {
       log.info({ data }, 'Group info');
 
       return reassignUsers(data, group).then();
