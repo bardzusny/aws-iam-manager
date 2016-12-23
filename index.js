@@ -9,6 +9,7 @@ const log = bunyan.createLogger({ name: 'aws-iam-manager' });
 const users = require('./users');
 const groups = require('./groups');
 const roles = require('./roles');
+const polices = require('./polices');
 
 const getAuth = () =>
   `?access_token=${process.env.GITHUB_ACCESS_TOKEN}`;
@@ -45,6 +46,13 @@ const processRoles = blobUrl => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
+const processPolices = blobUrl => new Promise((resolve, reject) => {
+  getJson(blobUrl)
+    .then(polices.processPolicies)
+    .then(resolve)
+    .catch(reject);
+});
+
 module.exports.handler = (event, context, callback) => {
   const returnError = error => {
     log.fatal({ error }, 'Internal error');
@@ -68,12 +76,17 @@ module.exports.handler = (event, context, callback) => {
     const groupsBlobUrl = payload.data
       .filter(file => file.name === 'groups.yml')[0].git_url;
 
+    const policesBlobUrl = payload.data
+      .filter(file => file.name === 'polices.yml')[0].git_url;
+
     const promises = [{
       fn: processUsers, url: usersBlobUrl,
     }, {
       fn: processGroups, url: groupsBlobUrl,
     }, {
       fn: processRoles, url: rolesBlobUrl,
+    }, {
+      fn: processPolices, url: policesBlobUrl,
     }];
 
     return Promise.map(promises, promise => promise.fn(promise.url),
