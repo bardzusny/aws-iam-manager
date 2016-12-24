@@ -22,7 +22,7 @@ const removePolicy = PolicyArn => new Promise((resolve, reject) => {
   iam.deletePolicy({ PolicyArn }).promise().then(resolve).catch(reject);
 });
 
-const processPolicies = json => new Promise((resolve, reject) => {
+const process = json => new Promise((resolve, reject) => {
   resolve();
 
   iam.listPolicies({
@@ -50,11 +50,11 @@ const processPolicies = json => new Promise((resolve, reject) => {
     }).catch(rejectError);
 
   }).catch(error => {
-    log.error(error, 'Error while listing policies user');
+    log.error(error, 'Error while listing policies');
     return reject(error);
   });
 });
 
 module.exports = {
-  processPolicies,
+  process,
 };

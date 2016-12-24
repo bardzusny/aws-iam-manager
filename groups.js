@@ -62,6 +62,25 @@ const reassignUsers = (data, group) => new Promise((resolve, reject) => {
     });
 });
 
+const getPolicyArn = PolicyName => new Promise((resolve, reject) => {
+  iam.listPolicies({
+    PathPrefix: process.ENV.USERS_PATH,
+  }).promise()
+    .then(payload => resolve(payload.Polices.filter(policy => policy.PolicyName === PolicyName)))
+    .catch(reject);
+});
+
+const attachGroupPolicy = (GroupName, PolicyName) => new Promise((resolve, reject) => {
+
+
+  iam.attachGroupPolicy({
+    GroupName,
+    PolicyArn,
+  }).promise().then(data => {
+
+  }).catch(reject);
+});
+
 const forgeNewGroup = (group, error) => new Promise((resolve, reject) => {
   if (error.code === 'NoSuchEntity') {
     log.info({ name: group.name }, 'Group not found, creating...');
@@ -76,7 +95,7 @@ const forgeNewGroup = (group, error) => new Promise((resolve, reject) => {
   return reject(error);
 });
 
-const updateGroups = json => new Promise((resolve, reject) => {
+const process = json => new Promise((resolve, reject) => {
   const promises = json.groups.map(group =>
     iam.getGroup({ GroupName: group.name }).promise().then(data => {
       log.info({ data }, 'Group info');
@@ -93,5 +112,5 @@ const updateGroups = json => new Promise((resolve, reject) => {
 });
 
 module.exports = {
-  updateGroups,
+  process,
 };

@@ -24,7 +24,7 @@ const deleteUser = UserName => new Promise((resolve, reject) => {
   iam.deleteUser({ UserName }).promise().then(resolve).catch(reject);
 });
 
-const updateUsers = json => new Promise((resolve, reject) => {
+const process = json => new Promise((resolve, reject) => {
   log.info({ newData: json }, 'Updating users');
 
   iam.listUsers({
@@ -59,5 +59,5 @@ const updateUsers = json => new Promise((resolve, reject) => {
 });
 
 module.exports = {
-  updateUsers,
+  process,
 };

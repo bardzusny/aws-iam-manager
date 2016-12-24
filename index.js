@@ -25,30 +25,25 @@ const getJson = url => new Promise((resolve, reject) => {
   }).catch(reject);
 });
 
+// TODO: Wrap in fancy loop/map (with concurrency = 1 for sequential processing) instead of repeating 4 times
+// TODO: Group in objects with blob URLs (inside axios.get) and promises (factory?)
 const processUsers = blobUrl => new Promise((resolve, reject) => {
   getJson(blobUrl)
-    .then(users.updateUsers)
+    .then(users.process)
     .then(resolve)
     .catch(reject);
 });
 
 const processGroups = blobUrl => new Promise((resolve, reject) => {
   getJson(blobUrl)
-    .then(groups.updateGroups)
-    .then(resolve)
-    .catch(reject);
-});
-
-const processRoles = blobUrl => new Promise((resolve, reject) => {
-  getJson(blobUrl)
-    .then(roles.updateRoles)
+    .then(groups.process)
     .then(resolve)
     .catch(reject);
 });
 
 const processPolices = blobUrl => new Promise((resolve, reject) => {
   getJson(blobUrl)
-    .then(polices.processPolicies)
+    .then(polices.process)
     .then(resolve)
     .catch(reject);
 });
@@ -57,21 +52,18 @@ module.exports.handler = (event, context, callback) => {
   const returnError = error => {
     log.fatal({ error }, 'Internal error');
     return callback(null, { statusCode: 400, error });
-  }
+  };
 
   const returnSuccess = data => {
     log.info({ data }, 'Finish');
     return callback(null, { statusCode: 200, data });
-  }
+  };
 
   const contentsUrl = `${event.repository.contents_url.replace('{+path}', '')}${getAuth()}`;
 
   axios.get(contentsUrl).then(payload => {
     const usersBlobUrl = payload.data
       .filter(file => file.name === 'users.yml')[0].git_url;
-
-    const rolesBlobUrl = payload.data
-      .filter(file => file.name === 'roles.yml')[0].git_url;
 
     const groupsBlobUrl = payload.data
       .filter(file => file.name === 'groups.yml')[0].git_url;
@@ -82,11 +74,9 @@ module.exports.handler = (event, context, callback) => {
     const promises = [{
       fn: processUsers, url: usersBlobUrl,
     }, {
-      fn: processGroups, url: groupsBlobUrl,
-    }, {
-      fn: processRoles, url: rolesBlobUrl,
-    }, {
       fn: processPolices, url: policesBlobUrl,
+    }, {
+      fn: processGroups, url: groupsBlobUrl,
     }];
 
     return Promise.map(promises, promise => promise.fn(promise.url),
