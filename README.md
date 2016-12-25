@@ -2,6 +2,12 @@
 
 Manager your IAM Users, Roles, Groups and Policies using Github Repository with simple AWS Lambda function based on-top Serverless framework.
 
+### Overview
+
+![Overview](overview.png)
+
+Basing on repository contents, AIM will create users, attach them to specific groups with attached policies.
+
 ### Installation
 
 1. ```npm install -g serverless@1.3.0```
@@ -12,6 +18,32 @@ Manager your IAM Users, Roles, Groups and Policies using Github Repository with 
 6. Navigate to `https://console.aws.amazon.com/iam/home?region=<YOUR_REGION_NAME>#/users/GithubHookUser?section=permissions&policy=direct.githubhookuser.githubhookallowsnssubscriptionpolicy` and copy `Resource` value. It should something like this: `arn:aws:sns:us-east-1:YOUR_AWS_ACC_NUMBER:aws-iam-manager-dev-GithubNotifyTopic-xxxxx`.
 7. Go to `https://github.com/YOUR_NAME/REPO/settings/hooks/new?service=amazonsns` and fill form with data you retrieved in steps 5 & 6. Lastly, click `Add Service`.
 8. Now `aws-iam-manager` will continiously monitor your GitHub repo and reflect changes on AWS account.
+
+### Repository Structure
+##### Files structure
+
+```
+/repo_root
+├── users.yml
+├── groups.yml
+└── policies.yml
+```
+
+`users.yml`
+```
+users:
+  - sample.user
+  - another.user
+```
+
+`policies.yml`
+```
+```
+
+`groups.yml`
+```
+```
+
 
 ### Private Repositories
 In case your repository is private you need to include `access_token` in every request to Github API. To do that, generate new Personal Access Token, copy `secrets.yml.example` to `secrets.yml` (or run `npm run prepare-secrets`) and paste there.
