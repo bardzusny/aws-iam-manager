@@ -24,7 +24,7 @@ const deleteUser = UserName => new Promise((resolve, reject) => {
   iam.deleteUser({ UserName }).promise().then(resolve).catch(reject);
 });
 
-const process = json => new Promise((resolve, reject) => {
+const update = json => new Promise((resolve, reject) => {
   log.info({ newData: json }, 'Updating users');
 
   iam.listUsers({
@@ -53,11 +53,11 @@ const process = json => new Promise((resolve, reject) => {
       })
       .catch(reject);
   }).catch(error => {
-    log.error(error, 'Error while listing user');
+    log.error(error, 'Error while updating users');
     return reject(error);
   });
 });
 
 module.exports = {
-  process,
+  update,
 };

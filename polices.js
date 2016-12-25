@@ -22,13 +22,13 @@ const removePolicy = PolicyArn => new Promise((resolve, reject) => {
   iam.deletePolicy({ PolicyArn }).promise().then(resolve).catch(reject);
 });
 
-const process = json => new Promise((resolve, reject) => {
-  resolve();
+const update = json => new Promise((resolve, reject) => {
+  log.info({ newData: json }, 'Updating policies');
 
   iam.listPolicies({
     PathPrefix: process.env.USERS_PATH,
   }).promise().then(data => {
-    log.silly(data);
+    log.info(data, 'Old Policies');
 
     const rejectError = error => {
       log.error({ error }, 'Error while re-creating policies');
@@ -42,19 +42,20 @@ const process = json => new Promise((resolve, reject) => {
     Promise.all(data.Policies.map(policy => removePolicy(policy.Arn))).then(deleteResult => {
       log.info({ deleteResult }, 'Old policies removed, creating new...');
 
-      Promise.all(json.policies.map(policy => createPolicy(policy.name, policy.document))).then(createResult => {
-        log.info({ createResult }, 'New policies created');
+      Promise.all(json.policies.map(policy => createPolicy(policy.name, JSON.stringify(policy.document))))
+        .then(createResult => {
+          log.info({ createResult }, 'New policies created');
 
-        return resolve({ createResult, deleteResult });
+          return resolve({ createResult, deleteResult });
       }).catch(rejectError);
     }).catch(rejectError);
 
   }).catch(error => {
-    log.error(error, 'Error while listing policies');
+    log.error(error, 'Error while updating policies');
     return reject(error);
   });
 });
 
 module.exports = {
-  process,
+  update,
 };

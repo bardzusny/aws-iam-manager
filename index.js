@@ -8,7 +8,6 @@ const Promise = require('bluebird');
 const log = bunyan.createLogger({ name: 'aws-iam-manager' });
 const users = require('./users');
 const groups = require('./groups');
-const roles = require('./roles');
 const polices = require('./polices');
 
 const getAuth = () =>
@@ -29,21 +28,21 @@ const getJson = url => new Promise((resolve, reject) => {
 // TODO: Group in objects with blob URLs (inside axios.get) and promises (factory?)
 const processUsers = blobUrl => new Promise((resolve, reject) => {
   getJson(blobUrl)
-    .then(users.process)
+    .then(users.update)
     .then(resolve)
     .catch(reject);
 });
 
 const processGroups = blobUrl => new Promise((resolve, reject) => {
   getJson(blobUrl)
-    .then(groups.process)
+    .then(groups.update)
     .then(resolve)
     .catch(reject);
 });
 
 const processPolices = blobUrl => new Promise((resolve, reject) => {
   getJson(blobUrl)
-    .then(polices.process)
+    .then(polices.update)
     .then(resolve)
     .catch(reject);
 });
@@ -69,14 +68,14 @@ module.exports.handler = (event, context, callback) => {
       .filter(file => file.name === 'groups.yml')[0].git_url;
 
     const policesBlobUrl = payload.data
-      .filter(file => file.name === 'polices.yml')[0].git_url;
+      .filter(file => file.name === 'policies.yml')[0].git_url;
 
     const promises = [{
       fn: processUsers, url: usersBlobUrl,
     }, {
-      fn: processPolices, url: policesBlobUrl,
-    }, {
       fn: processGroups, url: groupsBlobUrl,
+    }, {
+      fn: processPolices, url: policesBlobUrl,
     }];
 
     return Promise.map(promises, promise => promise.fn(promise.url),
