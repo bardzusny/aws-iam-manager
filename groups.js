@@ -89,15 +89,14 @@ const reassignUsers = (data, group) => new Promise((resolve, reject) => {
   return Promise.all(usersToAdd
       .map(user => addUserToGroup(user, group.name))
       .concat(usersToDelete
-        .map(user => removeUserFromGroup(user, group.name))))
-    .then(result => {
+        .map(user => removeUserFromGroup(user, group.name)))
+  ).then(result => {
       log.info(result, 'Updating users-groups relations finished');
 
       return attachGroupPolicy(group.name, group.policy)
         .then(resolve)
         .catch(reject);
-    })
-    .catch(error => {
+    }).catch(error => {
       log.error({ error }, 'Error while assignign user to group');
       return reject(error);
     });
