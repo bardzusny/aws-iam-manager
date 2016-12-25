@@ -6,7 +6,7 @@ Manager your IAM Users, Roles, Groups and Policies using Github Repository with 
 
 ![Overview](overview.png)
 
-Basing on repository contents, AIM will create users, attach them to specific groups with attached policies.
+Basing on repository contents, AWS-IAM-Manager (`AIM`) will create users, attach them to specific groups with attached policies.
 
 ### Installation
 
@@ -29,6 +29,7 @@ Basing on repository contents, AIM will create users, attach them to specific gr
 └── policies.yml
 ```
 
+##### Sample files
 `users.yml`
 ```
 users:

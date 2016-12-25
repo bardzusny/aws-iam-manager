@@ -58,7 +58,9 @@ module.exports.handler = (event, context, callback) => {
     return callback(null, { statusCode: 200, data });
   };
 
-  const contentsUrl = `${event.repository.contents_url.replace('{+path}', '')}${getAuth()}`;
+  log.info(event, 'SNS event received');
+  const githubMessage = JSON.parse(event.Records[0].Sns.Message);
+  const contentsUrl = `${githubMessage.repository.contents_url.replace('{+path}', '')}${getAuth()}`;
 
   axios.get(contentsUrl).then(payload => {
     const usersBlobUrl = payload.data
