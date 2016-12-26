@@ -8,6 +8,26 @@ provider:
   environment:
     GITHUB_ACCESS_TOKEN: ${file(./secrets.yml):GITHUB_ACCESS_TOKEN}
     USERS_PATH: /aim-managed/
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - iam:ListUsers
+        - iam:DeleteUser
+        - iam:CreateUser
+        - iam:AddUserToGroup
+        - iam:RemoveUserFromGroup
+        - iam:ListPolicies
+        - iam:CreatePolicy
+        - iam:DeletePolicy
+        - iam:GetPolicy
+        - iam:ListGroups
+        - iam:GetGroup
+        - iam:CreateGroup
+        - iam:DeleteGroup
+        - iam:DeleteGroupPolicy
+        - iam:AttachGroupPolicy
+        - iam:DetachGroupPolicy
+      Resource: "*"
 
 package:
   exclude:
