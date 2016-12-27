@@ -1,6 +1,6 @@
 # aws-iam-manager
 
-Manager your IAM Users, Groups and Policies using Github Repository with simple AWS Lambda function based on-top Serverless framework.
+Manage your IAM Users, Groups and Policies using Github Repository with simple AWS Lambda function based on-top Serverless framework.
 
 ### Overview
 
