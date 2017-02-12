@@ -1,60 +1,60 @@
 'use strict';
 
 const Promise = require('bluebird');
-const AWS = require('aws-sdk');
 const bunyan = require('bunyan');
 
-const iam = new AWS.IAM();
+const { iam } = require('./iam');
 const log = bunyan.createLogger({ name: 'polices' });
 
-const createPolicy = (PolicyName, PolicyDocument) => new Promise((resolve, reject) => {
+function createPolicy(PolicyName, PolicyDocument) {
   log.info({ PolicyName, PolicyDocument }, 'Creating new policy...');
 
-  iam.createPolicy({
+  return iam.createPolicy({
     PolicyName,
     PolicyDocument,
     Path: process.env.USERS_PATH,
-  }).promise().then(resolve).catch(reject);
-});
+  }).promise();
+};
 
-const removePolicy = PolicyArn => new Promise((resolve, reject) => {
+function removePolicy(PolicyArn) {
   log.info({ PolicyArn }, 'Deleting old policy...');
-  iam.deletePolicy({ PolicyArn }).promise().then(resolve).catch(reject);
-});
+  return iam.deletePolicy({ PolicyArn }).promise();
+};
 
-const update = json => new Promise((resolve, reject) => {
+function update(json) {
   log.info({ newData: json }, 'Updating policies');
 
-  iam.listPolicies({
+  return iam.listPolicies({
     PathPrefix: process.env.USERS_PATH,
-  }).promise().then(data => {
-    log.info(data, 'Old Policies');
+  }).promise()
+    .catch(error => {
+      log.error(error, 'Error while updating policies');
+    })
+    .then(data => {
+      log.info(data, 'Old Policies');
 
-    const rejectError = error => {
-      log.error({ error }, 'Error while re-creating policies');
-
-      return reject(error);
-    };
-
-    // Because we have not power to get current policies document and compare them
-    // We have to remove all policies and re-create them from scratch.
-    // Policies are also immutable, it's possible to version them but AWS limits version count to 5.
-    Promise.all(data.Policies.map(policy => removePolicy(policy.Arn))).then(deleteResult => {
+      // Because we have not power to get current policies document and compare them
+      // We have to remove all policies and re-create them from scratch.
+      // Policies are also immutable, it's possible to version them but AWS limits version count to 5.
+      return Promise.all(data.Policies.map(policy => removePolicy(policy.Arn)));
+    })
+    .then(deleteResult => {
       log.info({ deleteResult }, 'Old policies removed, creating new...');
 
-      Promise.all(json.policies.map(policy => createPolicy(policy.name, JSON.stringify(policy.document))))
-        .then(createResult => {
-          log.info({ createResult }, 'New policies created');
+      return Promise.join(
+        deleteResult,
+        Promise.all(json.policies.map(policy => createPolicy(policy.name, JSON.stringify(policy.document))))
+      );
+    })
+    .then(([deleteResult, createResult]) => {
+      log.info({ createResult }, 'New policies created');
 
-          return resolve({ createResult, deleteResult });
-      }).catch(rejectError);
-    }).catch(rejectError);
-
-  }).catch(error => {
-    log.error(error, 'Error while updating policies');
-    return reject(error);
-  });
-});
+      return { createResult, deleteResult };
+    })
+    .catch(error => {
+      log.error({ error }, 'Error while re-creating policies');
+    });
+}
 
 module.exports = {
   update,
